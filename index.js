@@ -99,28 +99,18 @@ async function scanDynamoRecords(scanParams, itemArray) {
 
 async function saveProduct(requestBody) {
   console.log(requestBody);
+  const itemsArray = [];
+    for (let i = 0; i < requestBody.productData.length; i++) {
+        itemsArray.push({
+            PutRequest: {
+                Item: requestBody.productData[i]
+            }
+        });
+    }
+    console.log(itemsArray)
   const params = {
   RequestItems: {
-    "product-inventory": [
-       {
-         PutRequest: {
-           Item: {
-             "productId": "100",
-               "product": "table",
-               "quantity": "9"
-           }
-         }
-       },
-       {
-         PutRequest: {
-           Item: {
-             "productId": "101",
-               "product": "chair",
-               "quantity": "9"
-           }
-         }
-       }
-    ]
+    "product-inventory": itemsArray
   }
 };
 
