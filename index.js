@@ -48,36 +48,39 @@ async function getProduct(productId) {
   return await dynamodb.get(params).promise().then((response) => {
     return buildResponse(200, response.Item);
   }, (error) => {
-    console.error('error: ', error);
+    console.error('Do your custom error handling here. I am just gonna log it: ', error);
   });
 }
 
 async function getProducts() {
   const params = {
     RequestItems:{
-      dynamodbTableName : {
-        Keys: [
-          {
-            productId:"2"
-          }
-        ]
-      },
-      dynamodbTableName2 : {
+      "Message" : {
         Keys:[
           {
             messageId:"9",
           }
         ]
+      },
+      "product-inventory" : {
+        Keys:[
+          {
+            productId:"1",
+          }
+        ]
       }
     }
   };
-  console.log(params);
-  return await dynamodb.batchGet(params).promise().then((response) => {
-    console.log(response);
-    return buildResponse(200, response.Responses);
-  }, (error) => {
-    console.error('error: ', error);
-  });
+  console.log(JSON.stringify(params));
+ // return await dynamodb.batchGet(params).promise().then((response) => {
+  //  console.log(response);
+  //  return buildResponse(200, response.Responses);
+  //}, (error) => {
+  //  console.error('error: ', error);
+  //});
+  const demo=  await dynamodb.batchGet(params).promise();
+  console.log(demo)
+  return buildResponse(200,demo);
 }
 
 async function scanDynamoRecords(scanParams, itemArray) {
@@ -90,26 +93,41 @@ async function scanDynamoRecords(scanParams, itemArray) {
     }
     return itemArray;
   } catch(error) {
-    console.error('error: ', error);
+    console.error('Do your custom error handling here. I am just gonna log it: ', error);
   }
 }
 
 async function saveProduct(requestBody) {
   console.log(requestBody);
   const params = {
-    TableName: dynamodbTableName,
-    Item: requestBody
+  RequestItems: {
+    "product-inventory": [
+       {
+         PutRequest: {
+           Item: {
+             "productId": "100",
+               "product": "table",
+               "quantity": "9"
+           }
+         }
+       },
+       {
+         PutRequest: {
+           Item: {
+             "productId": "101",
+               "product": "chair",
+               "quantity": "9"
+           }
+         }
+       }
+    ]
   }
-  return await dynamodb.put(params).promise().then(() => {
-    const body = {
-      Operation: 'SAVE',
-      Message: 'SUCCESS',
-      Item: requestBody
-    }
-    return buildResponse(200, body);
-  }, (error) => {
-    console.error('error: ', error);
-  })
+};
+
+  console.log(JSON.stringify(params));
+  const demo=  await dynamodb.batchWrite(params).promise();
+  console.log(demo)
+  return buildResponse(200,demo);
 }
 
 async function modifyProduct(requestBody) {
@@ -124,7 +142,7 @@ async function modifyProduct(requestBody) {
   if(requestBody.quantity && requestBody){
     attributeValues[":quantity"]= requestBody.quantity;
     condition="quantity= :quantity";
-    updateExpression=updateExpression+ condition + ",";
+    updateExpression=updateExpression+ condition ;
   }
   console.log(updateExpression);
   const params = {
@@ -133,9 +151,7 @@ async function modifyProduct(requestBody) {
       'productId': requestBody.productId
     },
     UpdateExpression: updateExpression,
-    ExpressionAttributeValues: {
-      attributeValues
-    },
+    ExpressionAttributeValues: attributeValues,
     ReturnValues: 'UPDATED_NEW'
   }
   console.log(params)
@@ -147,7 +163,7 @@ async function modifyProduct(requestBody) {
     }
     return buildResponse(200, body);
   }, (error) => {
-    console.error('error: ', error);
+    console.error('Do your custom error handling here. I am just gonna log it: ', error);
   })
 }
 
@@ -172,7 +188,7 @@ async function deleteProduct(productId) {
     }
     return buildResponse(200, body);
   }, (error) => {
-    console.error('error: ', error);
+    console.error('Do your custom error handling here. I am just gonna log it: ', error);
   })
 }
 
