@@ -43,7 +43,8 @@ async function getProduct(productId) {
     TableName: dynamodbTableName,
     Key: {
       'productId': productId
-    }
+    },
+    ProjectionExpression: "product",
   }
   return await dynamodb.get(params).promise().then((response) => {
     return buildResponse(200, response.Item);
